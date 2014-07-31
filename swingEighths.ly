@@ -7,6 +7,33 @@ If there is a note that spans both the on and off beats, the whole beat is spare
 '0)
 
 (define (alterDuration musak)
+ (define (getAllNotes musak)
+  (let
+   (
+    (notes '())
+   )
+   (cond 
+    ((ly:music? musak)
+      (let
+       (
+        (hasElements (ly:music-property musak 'elements #f))
+        (hasElement (ly:music-property musak 'element #f))
+       )
+       (cond
+        (hasElements (append notes (getAllNotes hasElements)))
+        (hasElement (append notes (getAllNotes hasElement)))
+        ; A singular music object?
+        ((equal? (ly:music-property musak 'name) 'NoteEvent) (append notes musak))
+        (else '())
+       )
+     ) 
+    )
+    ((ly:music-list? musak) (append notes (map getAllNotes musak)))
+    (else '())
+   )
+  )
+ )
+ (display (getAllNotes musak))
  (let* 
   (
    (oldDuration (ly:music-property (first (ly:music-property musak 'elements)) 'duration))
