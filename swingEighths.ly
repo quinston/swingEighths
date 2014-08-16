@@ -41,7 +41,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
 !#
   (cond 
    ((equal? runningLength 1/8) (list takenNotes leftoverNotes nextNoteStartTime))
-   ((null? leftoverNotes) (list '() '() nextNoteStartTime))
+   ((null? leftoverNotes) (list '() leftoverNotes nextNoteStartTime))
    ((< runningLength 1/8) 
     (let 
      (
@@ -62,6 +62,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
  ; Drop notes until we are at the next beat. Used after a failure to get a half beat
  (define (skipToNextBeat leftoverNotes nextNoteStartTime)
   (cond 
+   ; out of notes
    ((null? leftoverNotes) 
 #!
     (display "skip to:")
@@ -70,7 +71,9 @@ If there is a note that spans both the on and off beats, the whole beat is spare
 !#
     '()
    )
-   ((equal? nextNoteStartTime (ceiling nextNoteStartTime)) leftoverNotes)
+   ; we've completed a beat. we're done.
+   ((integer? (/ nextNoteStartTime 1/4)) leftoverNotes)
+   ; keep going
    (else 
     (display "skiptonextbeat")
     (skipToNextBeat (cdr leftoverNotes) (+ nextNoteStartTime (getNoteDuration (car leftoverNotes))))
@@ -121,22 +124,50 @@ If there is a note that spans both the on and off beats, the whole beat is spare
   )
  )
 
-(define (alterDuration musak multiplier)
- (let* 
-  (
-   (oldDuration (ly:music-property (first (ly:music-property musak 'elements)) 'duration))
-   (oldFactor (ly:duration-factor oldDuration))
+(define (alterDuration notes multiplier)
+ (map 
+  (lambda (note)
+   (let* 
+    (
+     (oldDuration (ly:music-property note 'duration))
+     (oldFactor (ly:duration-factor oldDuration))
+    )
+    (set! 
+     (ly:music-property note 'duration)
+     (ly:make-duration (ly:duration-log oldDuration) (ly:duration-dot-count oldDuration) (* (car oldFactor) multiplier) (cdr oldFactor))
+    )
+   )
   )
-  (set! 
-   (ly:music-property (first (ly:music-property musak 'elements)) 'duration)
-   (ly:make-duration (ly:duration-log oldDuration) (ly:duration-dot-count oldDuration) (* (car oldFactor) multiplier) (cdr oldFactor))
-  )
+  notes
  )
- (display (ly:music-duration-length musak))
- musak
 )
 
-(printHalfBeats (getAllNotes musak) 0)
-(alterDuration musak 3)
-
+(define (lengthenDownShortenUp leftoverNotes nextNoteStartTime)
+  ; Get a half beat.
+  (define newLeftoverNotes (getOneHalfBeat  '() leftoverNotes nextNoteStartTime 0))
+  (cond
+   ; Were there no notes to pull from?
+   ((null? leftoverNotes) '())
+   (else
+    (cond 
+     ( (null? (car newLeftoverNotes))
+      ; Could not get a half beat. Skip.
+      (lengthenDownShortenUp (skipToNextBeat (cadr newLeftoverNotes) (caddr newLeftoverNotes)) (ceiling (caddr newLeftoverNotes)))
+     )
+     (else 
+      (alterDuration (car newLeftoverNotes) (* 2 duration))
+      (display "\ndown\n")
+      (display (car newLeftoverNotes))
+      (set! newLeftoverNotes (getOneHalfBeat  '() (cadr newLeftoverNotes) (caddr newLeftoverNotes) 0))
+      (alterDuration (car newLeftoverNotes) duration)
+      (display "\nup\n")
+      (display (car newLeftoverNotes))
+      (lengthenDownShortenUp (cadr newLeftoverNotes) (caddr newLeftoverNotes))
+     )
+    )
+   )
+  )
+ )
+(lengthenDownShortenUp (getAllNotes musak) 0)
+musak
 )
