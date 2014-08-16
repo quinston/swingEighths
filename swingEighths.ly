@@ -121,11 +121,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
   )
  )
 
-(define (alterDuration musak)
-  
-
-
-
+(define (alterDuration musak multiplier)
  (let* 
   (
    (oldDuration (ly:music-property (first (ly:music-property musak 'elements)) 'duration))
@@ -133,7 +129,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
   )
   (set! 
    (ly:music-property (first (ly:music-property musak 'elements)) 'duration)
-   (ly:make-duration (ly:duration-log oldDuration) (ly:duration-dot-count oldDuration) (* (car oldFactor) duration) (cdr oldFactor))
+   (ly:make-duration (ly:duration-log oldDuration) (ly:duration-dot-count oldDuration) (* (car oldFactor) multiplier) (cdr oldFactor))
   )
  )
  (display (ly:music-duration-length musak))
@@ -141,6 +137,6 @@ If there is a note that spans both the on and off beats, the whole beat is spare
 )
 
 (printHalfBeats (getAllNotes musak) 0)
-(alterDuration musak)
+(alterDuration musak 3)
 
 )
