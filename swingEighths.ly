@@ -159,7 +159,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
       (display "\ndown\n")
       (display (car newLeftoverNotes))
       (set! newLeftoverNotes (getOneHalfBeat  '() (cadr newLeftoverNotes) (caddr newLeftoverNotes) 0))
-      (alterDuration (car newLeftoverNotes) duration)
+      (alterDuration (car newLeftoverNotes) (* 2 (- 1 duration)))
       (display "\nup\n")
       (display (car newLeftoverNotes))
       (lengthenDownShortenUp (cadr newLeftoverNotes) (caddr newLeftoverNotes))
