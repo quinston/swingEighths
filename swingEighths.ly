@@ -153,7 +153,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
     (cond 
      ( (null? (car newLeftoverNotes))
       ; Could not get a half beat. Skip.
-      (lengthenDownShortenUp (skipToNextBeat (cadr newLeftoverNotes) (caddr newLeftoverNotes)) (ceiling (caddr newLeftoverNotes)))
+      (lengthenDownShortenUp (skipToNextBeat (cadr newLeftoverNotes) (caddr newLeftoverNotes)) (* (ceiling (/ (caddr newLeftoverNotes) 1/4)) 1/4))
      )
      (else 
       (alterDuration (car newLeftoverNotes) (* 2 duration))
@@ -169,6 +169,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
    )
   )
  )
+;(printHalfBeats (getAllNotesAndRests musak) 0)
 (lengthenDownShortenUp (getAllNotesAndRests musak) 0)
 musak
 )
