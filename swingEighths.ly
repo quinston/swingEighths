@@ -1,3 +1,4 @@
+\version "2.18.2"
 swingEighths =
 #(define-music-function (parser location duration musak) (real? ly:music?) 
 "For each beat, lengthens the notes in the onbeat to `duration` of the beat, and shortens the rest to 1-`duration` of the beat. 
