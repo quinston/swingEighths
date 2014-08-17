@@ -6,10 +6,6 @@ swingEighths =
 If there is a note that spans both the on and off beats, the whole beat is spared." 
 
 (define (getAllNotesAndRests musak)
-  (let
-   (
-    (notes '())
-   )
    (cond 
     ((ly:music? musak)
       (let
@@ -18,20 +14,22 @@ If there is a note that spans both the on and off beats, the whole beat is spare
         (hasElement (ly:music-property musak 'element #f))
        )
        (cond
-        (hasElements (append notes (getAllNotesAndRests hasElements)))
-        (hasElement (append notes (getAllNotesAndRests hasElement)))
+        (hasElements (getAllNotesAndRests hasElements))
+        (hasElement (getAllNotesAndRests hasElement))
         ; A singular music object?
-        ((memv (ly:music-property musak 'name) '(NoteEvent RestEvent)) (append notes musak))
-        (else '())
+        ((memv (ly:music-property musak 'name) '(NoteEvent RestEvent)) musak)
+        (else #f)
        )
      ) 
     )
-    ((ly:music-list? musak) (append notes (map getAllNotesAndRests musak)))
-    (else '())
-   )
+    ((ly:music-list? musak) (map getAllNotesAndRests musak))
+    (else #f)
   )
  )
- (define (getNoteDuration note) (define ggg (ly:music-property note 'duration)) (ly:moment-main (ly:duration-length ggg)))
+ (define (getNoteDuration note)
+    (ly:moment-main (ly:duration-length (ly:music-property note 'duration))
+  )
+ )
  (define  (getOneHalfBeat takenNotes leftoverNotes nextNoteStartTime runningLength)
 #!
   (display "so far:")
@@ -43,6 +41,8 @@ If there is a note that spans both the on and off beats, the whole beat is spare
   (cond 
    ((equal? runningLength 1/8) (list takenNotes leftoverNotes nextNoteStartTime))
    ((null? leftoverNotes) (list '() leftoverNotes nextNoteStartTime))
+   ; the next thing is not a note or a rest
+   ((not (car leftoverNotes))	(getOneHalfBeat takenNotes (cdr leftoverNotes) nextNoteStartTime runningLength))
    ((< runningLength 1/8) 
     (let 
      (
