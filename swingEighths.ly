@@ -4,7 +4,7 @@ swingEighths =
 
 If there is a note that spans both the on and off beats, the whole beat is spared." 
 
-(define (getAllNotes musak)
+(define (getAllNotesAndRests musak)
   (let
    (
     (notes '())
@@ -17,15 +17,15 @@ If there is a note that spans both the on and off beats, the whole beat is spare
         (hasElement (ly:music-property musak 'element #f))
        )
        (cond
-        (hasElements (append notes (getAllNotes hasElements)))
-        (hasElement (append notes (getAllNotes hasElement)))
+        (hasElements (append notes (getAllNotesAndRests hasElements)))
+        (hasElement (append notes (getAllNotesAndRests hasElement)))
         ; A singular music object?
-        ((equal? (ly:music-property musak 'name) 'NoteEvent) (append notes musak))
+        ((memv (ly:music-property musak 'name) '(NoteEvent RestEvent)) (append notes musak))
         (else '())
        )
      ) 
     )
-    ((ly:music-list? musak) (append notes (map getAllNotes musak)))
+    ((ly:music-list? musak) (append notes (map getAllNotesAndRests musak)))
     (else '())
    )
   )
@@ -168,6 +168,6 @@ If there is a note that spans both the on and off beats, the whole beat is spare
    )
   )
  )
-(lengthenDownShortenUp (getAllNotes musak) 0)
+(lengthenDownShortenUp (getAllNotesAndRests musak) 0)
 musak
 )
