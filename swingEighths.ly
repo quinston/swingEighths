@@ -14,6 +14,7 @@ If there is a note that spans both the on and off beats, the whole beat is spare
         (hasElement (ly:music-property musak 'element #f))
        )
        (cond
+        ((equal? (ly:music-property musak 'name) 'GraceMusic) #f)
         (hasElements (getAllNotesAndRests hasElements))
         (hasElement (getAllNotesAndRests hasElement))
         ; A singular music object?
